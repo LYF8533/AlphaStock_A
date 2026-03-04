@@ -23,7 +23,12 @@
 ---
 ## 🎬 演示视频
 
-<video src="https://github.com/LYF8533/AlphaStock_A/raw/main/assets/demo-video.mp4" controls width="800"></video>
+## 🎬 演示视频
+
+<video controls width="800">
+  <source src="./assets/demo-video.mp4" type="video/mp4">
+  您的浏览器不支持视频标签。
+</video>
 
 ## 🛠️ 技术栈
 
