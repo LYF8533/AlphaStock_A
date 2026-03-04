@@ -24,10 +24,7 @@
 ## 🎬 演示视频
 
 
-<video controls width="800">
-  <source src="./assets/demo-video.mp4" type="video/mp4">
-  您的浏览器不支持视频标签。
-</video>
+
 
 ## 🛠️ 技术栈
 
