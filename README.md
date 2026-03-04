@@ -23,7 +23,7 @@
 ---
 ## 🎬 演示视频
 
-<video src="./assets/demo-video.mp4" controls width="800"></video>
+<video src="https://github.com/LYF8533/AlphaStock_A/raw/main/assets/demo-video.mp4" controls width="800"></video>
 
 ## 🛠️ 技术栈
 
