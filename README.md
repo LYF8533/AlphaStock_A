@@ -23,7 +23,9 @@
 ---
 ## 🎬 演示视频
 
+由于 GitHub 视频渲染不稳定，请直接下载或点击下方链接观看：
 
+[📥 下载演示视频 (18MB)](./assets/demo-video.mp4)
 <video src="https://github.com/LYF8533/AlphaStock_A/raw/main/assets/demo-video.mp4" controls width="800"></video>
 
 
