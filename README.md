@@ -23,7 +23,6 @@
 ---
 ## 🎬 演示视频
 
-## 🎬 演示视频
 
 <video controls width="800">
   <source src="./assets/demo-video.mp4" type="video/mp4">
