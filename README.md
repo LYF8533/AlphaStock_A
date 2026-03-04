@@ -93,9 +93,16 @@
     code VARCHAR(10) PRIMARY KEY,
     name VARCHAR(50) NOT NULL
     );
-4. 获取数据
-    ```bash
+4. 获取数据(两种方式)
+
+   方式一:使用全量数据库(推荐) 
+   ```bash
    python app/scripts/fetch_csi300_all.py
+   ```
+   方式二:使用示例数据(快速体验)
+   ```bash
+   # 无需数据库，直接使用 seed-data/HS300_sample.csv
+   python app/scripts/load_sample.py  # 验证数据加载
 5. 启动后端
     ```bash
    uvicorn main:app --reload
@@ -116,6 +123,13 @@
 ### 策略回测
 点击顶部“回测”按钮，设置参数后运行，可查看净值曲线和绩效指标。
 
+#### 数据源自动切换
+- 数据库连接正常：页面顶部显示绿色 ✅ 标签，使用全量数据
+- 数据库未连接：自动降级为示例数据（CSV），显示橙色 ⚠️ 标签，无需任何配置
+
+### 深色模式
+页面默认采用深色主题，所有组件均已适配
+
 ### 参数与结果示例
 
 | 参数 | 值 |
@@ -133,23 +147,26 @@
 | 夏普比率 | 0.10 |
 ## 🗺️ 项目结构
    ```AlphaStock_A/
-├── main.py # FastAPI 后端入口
+├── main.py                 # FastAPI 后端入口
 ├── app/
-│ └── scripts/ # 数据获取与回测脚本
-│ ├── fetch_csi300_all.py
-│ └── backtest_momentum.py
-├── frontend/ # Vue3 前端
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── SelectPage.vue
-│ │ │ ├── Backtest.vue
-│ │ │ └── StockChart.vue
-│ │ └── App.vue
-│ └── package.json
-├── .env.example # 环境变量示例
-├── .gitignore # Git 忽略文件
-├── requirements.txt # Python 依赖
-└── README.md # 项目说明
+│   └── scripts/            # 数据获取与回测脚本
+│       ├── fetch_csi300_all.py    # 批量获取沪深300数据
+│       ├── backtest_momentum.py   # 动量策略回测脚本
+│       └── load_sample.py         # 加载示例数据（CSV）
+├── seed-data/              # 示例数据目录
+│   └── HS300_sample.csv    # 20只沪深300成分股近3年数据
+├── frontend/               # Vue3 前端
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── SelectPage.vue    # 选股页面
+│   │   │   ├── Backtest.vue      # 回测页面（深色模式）
+│   │   │   └── StockChart.vue    # K线图组件
+│   │   └── App.vue
+│   └── package.json
+├── .env.example            # 环境变量示例
+├── .gitignore              # Git 忽略文件
+├── requirements.txt        # Python 依赖
+└── README.md               # 项目说明
 ```
 ## 🔜 后续计划
 
@@ -162,6 +179,7 @@
 ## 📝 开发日志
 
 - **v1.0**（2026-03-03）：基础动量选股 + 回测可视化，完成全栈闭环
+- **v1.0.1**（2026-03-04）：添加示例数据降级机制，深色模式，优化前端体验
 
 ## 📄 许可证
 
