@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 
 const props = defineProps({
@@ -13,78 +13,87 @@ const props = defineProps({
 const chart = ref(null)
 let myChart = null
 
+// 只在组件挂载时初始化一次
+onMounted(() => {
+  myChart = echarts.init(chart.value)
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleResize)
+
+  // 如果已经有数据，直接渲染
+  if (props.data.length) {
+    renderChart()
+  }
+})
+
+// 组件销毁时释放资源
+onUnmounted(() => {
+  if (myChart) {
+    myChart.dispose()
+    myChart = null
+  }
+  window.removeEventListener('resize', handleResize)
+})
+
+const handleResize = () => {
+  if (myChart) {
+    myChart.resize()
+  }
+}
+
+// 渲染图表
 const renderChart = () => {
-  if (!myChart) {
-    myChart = echarts.init(chart.value)
-  }
+  if (!myChart || !props.data.length) return
 
-  if (!props.data.length) {
-    myChart.clear()
-    return
-  }
-
-  // 构建K线数据（日期从远到近）
-  const kData = props.data.map(item => ({
-    date: item.trade_date,
-    open: item.open,
-    close: item.close,
-    low: item.low,
-    high: item.high
-  })).reverse()
-
-  const dates = kData.map(d => d.date)
-  const values = kData.map(d => [d.open, d.close, d.low, d.high])  // [open, close, low, high]
+  // 转换数据格式：日期从远到近
+  const chartData = [...props.data].reverse()
+  const dates = chartData.map(item => item.trade_date)
+  const prices = chartData.map(item => item.close)
 
   const option = {
-    title: { text: 'K线图', left: 'center' },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'cross' },
       formatter: function(params) {
-        const idx = params[0].dataIndex
-        const item = kData[idx]
-        return `${item.date}\n开盘: ${item.open}\n收盘: ${item.close}\n最低: ${item.low}\n最高: ${item.high}`
+        const data = params[0]
+        return `${data.name}<br/>收盘价: ${data.data}`
       }
     },
     xAxis: {
       type: 'category',
       data: dates,
       name: '日期',
-      nameLocation: 'middle',
-      nameGap: 25
+      axisLabel: { rotate: 30 }
     },
     yAxis: {
       type: 'value',
       name: '价格 (元)',
-      nameLocation: 'middle',
-      nameGap: 35,
       scale: true
+    },
+    series: [{
+      data: prices,
+      type: 'line',
+      name: '收盘价',
+      smooth: true,
+      lineStyle: { width: 2 },
+      areaStyle: { opacity: 0.1 }
+    }],
+    grid: {
+      left: '10%',
+      right: '5%',
+      bottom: '15%',
+      top: '10%',
+      containLabel: true
     },
     dataZoom: [
       { type: 'slider', start: 0, end: 100 },
       { type: 'inside', start: 0, end: 100 }
-    ],
-    series: [{
-      name: 'K线',
-      type: 'candlestick',
-      data: values,
-      itemStyle: {
-        color: '#ef232a',      // 阳线（收盘>开盘）红色
-        color0: '#14b143',     // 阴线（收盘<开盘）绿色
-        borderColor: '#ef232a',
-        borderColor0: '#14b143'
-      }
-    }]
+    ]
   }
+
   myChart.setOption(option)
 }
 
+// 监听数据变化
 watch(() => props.data, () => {
-  nextTick(() => { renderChart() })
+  renderChart()
 }, { deep: true })
-
-onMounted(() => {
-  if (props.data.length) renderChart()
-  window.addEventListener('resize', () => myChart?.resize())
-})
 </script>

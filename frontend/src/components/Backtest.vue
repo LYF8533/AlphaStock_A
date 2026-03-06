@@ -5,18 +5,24 @@
     <h1 style="color: #ffffff;">动量策略回测</h1>
 
     <!-- 数据源提示 - 深色背景适配 -->
-    <div v-if="dataSource" style="margin: 15px 0; padding: 12px 16px; background-color: #2d2d2d; border-radius: 6px; border-left: 6px solid #bb86fc; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <span style="font-weight: bold; font-size: 1.1em; color: #ffffff;">📊 当前数据源：</span>
-        <span style="font-size: 1.1em; color: #e0e0e0;">{{ dataSource }}</span>
-        <span v-if="dataSource.includes('示例')" style="background-color: #4a2a2a; color: #ff8a80; padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; border: 1px solid #cf6679;">
-          ⚠️ 数据库未连接（使用示例数据）
-        </span>
-        <span v-else style="background-color: #1e3a2e; color: #8bc34a; padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; border: 1px solid #4caf50;">
-          ✅ 数据库连接正常
-        </span>
-      </div>
-    </div>
+    <div v-if="dbStatus !== null"
+     :style="{
+       padding: '12px 16px',
+       marginBottom: '20px',
+       borderRadius: '6px',
+       backgroundColor: dbStatus ? '#e8f5e8' : '#ffebee',
+       color: dbStatus ? '#2e7d32' : '#c62828',
+       border: dbStatus ? '1px solid #2e7d32' : '1px solid #c62828',
+       fontSize: '15px'
+     }">
+  <span style="fontWeight: 'bold'">📊 当前数据源：</span> {{ dbMessage }}
+  <span v-if="!dbStatus" style="marginLeft: '12px'; backgroundColor: 'rgba(198,40,40,0.1)'; padding: '4px 8px'; borderRadius: '4px'">
+    ⚠️ 将使用示例数据（CSV）
+  </span>
+  <span v-else style="marginLeft: '12px'; backgroundColor: 'rgba(46,125,50,0.1)'; padding: '4px 8px'; borderRadius: '4px'">
+    ✅ 数据库连接正常
+  </span>
+</div>
 
     <!-- 回测参数表单 - 深色背景 -->
     <div style="margin: 20px 0; padding: 15px; background-color: #2d2d2d; border-radius: 6px; border: 1px solid #3d3d3d;">
@@ -63,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import axios from 'axios'
 import * as echarts from 'echarts'
 
@@ -76,7 +82,27 @@ const loading = ref(false)
 const navData = ref([])
 const metrics = ref({})
 const chartNav = ref(null)
+// 新增：检测数据库状态
+const dbStatus = ref(null)        // null: 加载中, true: 可用, false: 不可用
+const dbMessage = ref('')
 
+const checkDbStatus = async () => {
+  try {
+    const res = await axios.get('http://127.0.0.1:8000/check_db')
+    dbStatus.value = res.data.db_available
+    dbMessage.value = res.data.message
+    console.log('数据库状态:', res.data)
+  } catch (error) {
+    console.error('检测数据库失败', error)
+    dbStatus.value = false
+    dbMessage.value = '检测失败，使用示例数据'
+  }
+}
+
+// 页面加载时调用
+onMounted(() => {
+  checkDbStatus()
+})
 const renderChart = () => {
   nextTick(() => {
     if (!chartNav.value) {
