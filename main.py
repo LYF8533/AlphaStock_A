@@ -1,14 +1,13 @@
-import os
 import traceback
 from fastapi import FastAPI, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-
 from app.utils.data_source import DataSource, FullDataDataSource
 from app.utils.data_tools import calculate_momentum_from_df
 from app.utils.kline_service import get_kline_data
 from app.utils.backtest_service import run_backtest
 
+print("test")
 load_dotenv()
 app = FastAPI(title="A股动量选股 API")
 
@@ -23,11 +22,10 @@ app.add_middleware(
 
 # ---------- 依赖项 ----------
 def get_data_source(use_sample: bool = False):
+    print("准备创建 DataSource 实例")
     ds = DataSource(use_sample)
-    try:
-        yield ds
-    finally:
-        pass
+    print("DataSource 实例创建完成")
+    yield ds
 
 def get_full_data_source(use_sample: bool = False):
     ds = FullDataDataSource(use_sample)
@@ -36,20 +34,10 @@ def get_full_data_source(use_sample: bool = False):
     finally:
         pass
 
-def check_db_connection():
-    """只检查数据库连接，不加载数据"""
-    try:
-        from app.utils.data_source import get_db_engine
-        engine = get_db_engine()
-        with engine.connect() as conn:
-            conn.execute("SELECT 1")
-        return True, "数据库连接正常"
-    except Exception as e:
-        return False, f"连接失败: {e}"
-
 # ---------- 根路径 ----------
 @app.get("/")
 def root():
+    print("a股动量选股系统后端启动")
     return {"message": "A股动量选股系统后端运行中"}
 
 # ---------- K线数据 ----------
@@ -86,12 +74,7 @@ async def select_momentum(
 # ---------- 数据库探测 ----------
 @app.get("/check_db")
 async def check_db():
-    ok, msg = check_db_connection()
-    if ok:
-        return {"db_available": True, "message": msg}
-    else:
-        return {"db_available": False, "message": "使用示例数据（CSV）", "error": msg}
-
+    return {"db_available": False, "message": "使用 CSV 数据"}
 # ---------- 回测 ----------
 @app.get("/backtest")
 async def backtest(
@@ -110,3 +93,4 @@ async def backtest(
         print(f"回测接口异常: {e}")
         traceback.print_exc()
         return {"error": str(e)}
+
